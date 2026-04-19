@@ -1,0 +1,16 @@
+{
+  "name": "ai-checkup",
+  "version": "2.0.0",
+  "description": "소상공인 AI활용 체크업 - 수행평가형 AI 활용수준 진단 및 맞춤교육 추천",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
