@@ -134,6 +134,7 @@ export default function AdminDashboard() {
             </button>
             {lastRefresh && <div style={{ fontSize: 11, color: '#aaa' }}>마지막 갱신: {lastRefresh}</div>}
             <div style={{ fontSize: 12, color: '#aaa' }}>사단법인 AI융합연구소</div>
+          </div>
         </div>
 
         {/* 로딩 */}
@@ -349,3 +350,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
