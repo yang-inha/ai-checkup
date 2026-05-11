@@ -343,7 +343,8 @@ export default function AdminDashboard() {
           사단법인 AI융합연구소 · 소상공인 AI활용 체크업 v3.0 · jejuailab.com
           <br />이 페이지는 관리자 전용입니다.
         </div>
-        </>}
+        </>
+        }
       </div>
     </div>
   );
