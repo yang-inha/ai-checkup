@@ -3,10 +3,13 @@ import { useState, useRef, useEffect } from 'react';
 
 // ─── 업종 분류 ───
 const SHOP_CATEGORIES = [
-  { id: 'food', label: '외식업', examples: '분식집, 카페, 식당, 베이커리, 치킨집' },
-  { id: 'retail', label: '소매업', examples: '편의점, 옷가게, 꽃집, 문구점, 잡화점' },
-  { id: 'service', label: '서비스업', examples: '미용실, 세탁소, 수선집, 네일샵, 필라테스' },
-  { id: 'etc', label: '기타/직접입력', examples: '' },
+  { id: 'food', label: '외식업', examples: '분식집, 식당, 치킨집, 고깃집, 국수집' },
+  { id: 'cafe', label: '카페/디저트', examples: '카페, 베이커리, 아이스크림, 떡집, 주스바' },
+  { id: 'beauty', label: '뷰티/미용', examples: '미용실, 네일샵, 피부관리, 바버샵' },
+  { id: 'tourism', label: '숙박/관광', examples: '게스트하우스, 펜션, 렌터카, 체험관' },
+  { id: 'retail', label: '소매/판매', examples: '편의점, 옷가게, 꽃집, 문구점, 잡화점' },
+  { id: 'education', label: '교육/상담', examples: '학원, 과외, 심리상담, 컨설팅' },
+  { id: 'etc', label: '기타 서비스', examples: '세탁소, 수선집, 필라테스, 부동산' },
 ];
 
 // ─── 미션 데이터 ───
