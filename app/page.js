@@ -12,46 +12,142 @@ const SHOP_CATEGORIES = [
   { id: 'etc', label: '기타 서비스', examples: '세탁소, 수선집, 필라테스, 부동산' },
 ];
 
-// ─── 미션 데이터 ───
-const MISSIONS = [
-  {
-    id: 1,
-    title: '우리 가게 소개글 만들기',
-    icon: '🏪',
-    scenario: "네이버 플레이스에 올릴 '가게 소개글'을 AI에게 부탁해보세요. 어떤 가게인지, 뭘 잘하는지, 어디에 쓸 건지 AI에게 알려주세요.",
-    hint: '가게 이름, 대표 메뉴(또는 상품), 위치, 단골 고객층 등을 알려주면 AI가 더 잘 써줄 수 있어요. 오탈자는 걱정하지 않아도 돼요!',
-    evaluationCriteria: [
-      { key: 'specificity', label: '구체적 정보 포함', desc: '가게명, 메뉴/상품, 위치, 고객층 중 2개 이상' },
-      { key: 'context', label: '맥락 제공', desc: '어디에 쓸 건지(네이버, 인스타 등) 용도를 밝혔는지' },
-      { key: 'resultCondition', label: '결과물 조건 제시', desc: '분량, 톤앤매너, 느낌 등 원하는 결과물의 조건이 있는지' },
-    ],
-  },
-  {
-    id: 2,
-    title: '손님 리뷰에 답글 쓰기',
-    icon: '💬',
-    scenario: '손님이 이런 리뷰를 남겼습니다:\n"음식은 맛있는데 서비스가 좀 느렸어요. 바쁜 시간이라 그런 것 같긴 한데..."\n\nAI에게 이 리뷰에 대한 사장님 답글을 부탁해보세요.',
-    hint: "위에 있는 손님 리뷰를 복사해서 AI에게 붙여넣기 하거나, 직접 따라 적어주세요. 오탈자는 걱정하지 않아도 돼요! 그리고 '이 리뷰에 대한 답글을 써줘'라고 부탁하면 됩니다. 어떤 느낌(정중하게, 따뜻하게 등)으로 쓰고 싶은지도 함께 말해주면 더 좋아요!",
-    evaluationCriteria: [
-      { key: 'original_content', label: '원본 리뷰 전달', desc: '리뷰 내용을 AI에게 보여줬는지' },
-      { key: 'tone', label: '원하는 톤 설명', desc: '어떤 느낌으로 쓸지 말했는지' },
-      { key: 'direction', label: '방향성 제시', desc: '사과, 감사, 개선 등 방향을 제시했는지' },
-    ],
-  },
-  {
-    id: 3,
-    title: 'AI 답변 판별하기',
-    icon: '🔍',
-    scenario: 'AI에게 "제주도에서 장사가 제일 잘 되는 업종이 뭐야?"라고 물었더니 아래처럼 답했습니다. 이 답변을 믿고 바로 사업을 시작해도 될까요?',
-    aiResponse: '제주도에서 가장 장사가 잘 되는 업종은 카페입니다. 제주도의 관광객 수가 매년 1,500만 명을 넘기 때문에, 관광지 근처에 카페를 열면 월 매출 3,000만 원 이상을 기대할 수 있습니다. 특히 한라봉 주스나 흑돼지 버거 같은 특산품 메뉴를 넣으면 성공이 거의 보장됩니다.',
-    hint: "AI 답변이 항상 맞는 것은 아니에요. 숫자나 '보장된다'는 표현을 주의 깊게 살펴보세요.",
-    evaluationCriteria: [
-      { key: 'doubt', label: '의심 능력', desc: 'AI 답변을 무조건 믿지 않는지' },
-      { key: 'fact_check', label: '팩트체크 인식', desc: '검증이 필요하다고 인식하는지' },
-      { key: 'risk_awareness', label: '위험 인식', desc: '사업 결정에 AI만 의존하면 안 된다는 인식이 있는지' },
-    ],
-  },
+// ─── 미션3 공통 (AI 답변 판별) ───
+const MISSION3_COMMON = {
+  id: 3,
+  title: 'AI 답변 판별하기',
+  icon: '🔍',
+  scenario: 'AI에게 "제주도에서 장사가 제일 잘 되는 업종이 뭐야?"라고 물었더니 아래처럼 답했습니다. 이 답변을 믿고 바로 사업을 시작해도 될까요?',
+  aiResponse: '제주도에서 가장 장사가 잘 되는 업종은 카페입니다. 제주도의 관광객 수가 매년 1,500만 명을 넘기 때문에, 관광지 근처에 카페를 열면 월 매출 3,000만 원 이상을 기대할 수 있습니다. 특히 한라봉 주스나 흑돼지 버거 같은 특산품 메뉴를 넣으면 성공이 거의 보장됩니다.',
+  hint: "AI 답변이 항상 맞는 것은 아니에요. 숫자나 '보장된다'는 표현을 주의 깊게 살펴보세요.",
+  evaluationCriteria: [
+    { key: 'doubt', label: '의심 능력', desc: 'AI 답변을 무조건 믿지 않는지' },
+    { key: 'fact_check', label: '팩트체크 인식', desc: '검증이 필요하다고 인식하는지' },
+    { key: 'risk_awareness', label: '위험 인식', desc: '사업 결정에 AI만 의존하면 안 된다는 인식이 있는지' },
+  ],
+};
+
+// ─── 평가기준 템플릿 ───
+const CRITERIA_M1 = [
+  { key: 'specificity', label: '구체적 정보 포함', desc: '업체명, 대표 상품/서비스, 위치, 고객층 중 2개 이상' },
+  { key: 'context', label: '맥락 제공', desc: '어디에 쓸 건지(네이버, 인스타, 블로그 등) 용도를 밝혔는지' },
+  { key: 'resultCondition', label: '결과물 조건 제시', desc: '분량, 톤앤매너, 느낌 등 원하는 결과물의 조건이 있는지' },
 ];
+
+const CRITERIA_M2 = [
+  { key: 'original_content', label: '원본 내용 전달', desc: '리뷰/문의 내용을 AI에게 보여줬는지' },
+  { key: 'tone', label: '원하는 톤 설명', desc: '어떤 느낌으로 쓸지 말했는지' },
+  { key: 'direction', label: '방향성 제시', desc: '사과, 감사, 개선, 안내 등 방향을 제시했는지' },
+];
+
+// ─── 업종별 미션1, 미션2 ───
+const MISSIONS_BY_CATEGORY = {
+  food: [
+    {
+      id: 1, title: '우리 가게 소개글 만들기', icon: '🏪',
+      scenario: "네이버 플레이스에 올릴 '가게 소개글'을 AI에게 부탁해보세요.\n어떤 식당인지, 대표 메뉴가 뭔지, 어디에 있는지, 어떤 손님이 많이 오는지 알려주세요.",
+      hint: '가게 이름, 대표 메뉴, 위치, 단골 고객층 등을 알려주면 AI가 더 잘 써줄 수 있어요. 오탈자는 걱정하지 않아도 돼요!',
+      evaluationCriteria: CRITERIA_M1,
+    },
+    {
+      id: 2, title: '손님 리뷰에 답글 쓰기', icon: '💬',
+      scenario: '손님이 이런 리뷰를 남겼습니다:\n"음식은 맛있는데 서비스가 좀 느렸어요. 바쁜 시간이라 그런 것 같긴 한데..."\n\nAI에게 이 리뷰에 대한 사장님 답글을 부탁해보세요.',
+      hint: "위에 있는 손님 리뷰를 복사해서 AI에게 붙여넣기 하거나, 직접 따라 적어주세요. 오탈자는 걱정하지 않아도 돼요! '이 리뷰에 대한 답글을 써줘'라고 부탁하면 됩니다.",
+      evaluationCriteria: CRITERIA_M2,
+    },
+  ],
+  cafe: [
+    {
+      id: 1, title: '우리 카페 소개글 만들기', icon: '☕',
+      scenario: "인스타그램에 올릴 '카페 소개글'을 AI에게 부탁해보세요.\n어떤 카페인지, 시그니처 메뉴가 뭔지, 분위기가 어떤지 알려주세요.",
+      hint: '카페 이름, 시그니처 메뉴, 위치, 분위기(조용한/힙한 등), 주요 고객층을 알려주면 좋아요!',
+      evaluationCriteria: CRITERIA_M1,
+    },
+    {
+      id: 2, title: '단골 손님 메뉴 추천 요청에 답변', icon: '💬',
+      scenario: '단골 손님이 카카오톡으로 이런 메시지를 보냈습니다:\n"이번에 친구들 4명이랑 가려는데, 디저트 세트 추천해줄 수 있어요? 딸기 알레르기 있는 친구도 있어요."\n\nAI에게 이 메시지에 대한 답변을 부탁해보세요.',
+      hint: "손님 메시지를 AI에게 그대로 보여주고, 어떤 느낌(친근하게, 전문적으로 등)으로 답하고 싶은지 말해주세요.",
+      evaluationCriteria: CRITERIA_M2,
+    },
+  ],
+  beauty: [
+    {
+      id: 1, title: '우리 매장 소개글 만들기', icon: '💇',
+      scenario: "네이버 예약에 올릴 '매장 소개글'을 AI에게 부탁해보세요.\n어떤 미용실/샵인지, 전문 시술이 뭔지, 어디에 있는지 알려주세요.",
+      hint: '매장 이름, 전문 시술(커트/펌/네일 등), 위치, 경력, 주요 고객층을 알려주면 좋아요!',
+      evaluationCriteria: CRITERIA_M1,
+    },
+    {
+      id: 2, title: '시술 불만족 리뷰에 원장 답글', icon: '💬',
+      scenario: '고객이 이런 리뷰를 남겼습니다:\n"펌을 했는데 생각보다 너무 심하게 곱슬이 됐어요. 상담할 때 말한 것과 달라서 실망했습니다."\n\nAI에게 이 리뷰에 대한 원장님 답글을 부탁해보세요.',
+      hint: "리뷰 내용을 AI에게 보여주고, 전문적이면서도 공감하는 느낌으로 답글을 써달라고 해보세요.",
+      evaluationCriteria: CRITERIA_M2,
+    },
+  ],
+  tourism: [
+    {
+      id: 1, title: '우리 숙소 소개글 만들기', icon: '🏡',
+      scenario: "에어비앤비 또는 여기어때에 올릴 '숙소 소개글'을 AI에게 부탁해보세요.\n어떤 숙소인지, 특별한 점이 뭔지, 주변에 뭐가 있는지 알려주세요.",
+      hint: '숙소 이름, 유형(펜션/게스트하우스 등), 위치, 주변 관광지, 특색(오션뷰/바베큐 등)을 알려주면 좋아요!',
+      evaluationCriteria: CRITERIA_M1,
+    },
+    {
+      id: 2, title: '청결 불만 리뷰에 답글 쓰기', icon: '💬',
+      scenario: '퇴실 후 고객이 이런 리뷰를 남겼습니다:\n"위치는 좋은데 화장실 청소가 좀 아쉬웠어요. 수건도 냄새가 났고요. 그래도 사장님은 친절했어요."\n\nAI에게 이 리뷰에 대한 사장님 답글을 부탁해보세요.',
+      hint: "리뷰 내용을 AI에게 보여주고, 좋은 점(친절)에는 감사하고 아쉬운 점(청소)에는 사과+개선 의지를 담아달라고 해보세요.",
+      evaluationCriteria: CRITERIA_M2,
+    },
+  ],
+  retail: [
+    {
+      id: 1, title: '우리 상품 소개글 만들기', icon: '🛍️',
+      scenario: "스마트스토어 또는 당근마켓에 올릴 '상품/가게 소개글'을 AI에게 부탁해보세요.\n어떤 가게인지, 대표 상품이 뭔지, 어떤 분들에게 좋은지 알려주세요.",
+      hint: '가게 이름, 대표 상품, 가격대, 위치(온라인/오프라인), 주요 고객층을 알려주면 좋아요!',
+      evaluationCriteria: CRITERIA_M1,
+    },
+    {
+      id: 2, title: '배송 지연 문의에 판매자 답변', icon: '💬',
+      scenario: '고객이 스마트스토어에 이런 문의를 남겼습니다:\n"3일 전에 주문했는데 아직 배송 시작도 안 됐어요. 선물용이라 급한데 언제 보내주시나요?"\n\nAI에게 이 문의에 대한 판매자 답변을 부탁해보세요.',
+      hint: "문의 내용을 AI에게 보여주고, 사과하면서도 구체적인 해결 방안(발송 일정 등)을 담아달라고 해보세요.",
+      evaluationCriteria: CRITERIA_M2,
+    },
+  ],
+  education: [
+    {
+      id: 1, title: '우리 학원/상담소 소개글 만들기', icon: '📚',
+      scenario: "블로그 또는 네이버 플레이스에 올릴 '학원(상담소) 소개글'을 AI에게 부탁해보세요.\n어떤 곳인지, 어떤 수업/상담을 하는지, 강점이 뭔지 알려주세요.",
+      hint: '학원/상담소 이름, 과목/분야, 대상(초등/성인 등), 위치, 강사 경력, 차별점을 알려주면 좋아요!',
+      evaluationCriteria: CRITERIA_M1,
+    },
+    {
+      id: 2, title: '학부모 수업 불만족 문의에 답변', icon: '💬',
+      scenario: '학부모가 카카오톡으로 이런 메시지를 보냈습니다:\n"아이가 수학 수업이 너무 어렵다고 하네요. 진도가 좀 빠른 것 같은데, 수준별로 나눠서 가르치시나요?"\n\nAI에게 이 문의에 대한 원장님 답변을 부탁해보세요.',
+      hint: "학부모 메시지를 AI에게 보여주고, 공감하면서도 구체적인 해결책(수준별 반, 보충수업 등)을 안내하는 답변을 써달라고 해보세요.",
+      evaluationCriteria: CRITERIA_M2,
+    },
+  ],
+  etc: [
+    {
+      id: 1, title: '우리 업체 소개글 만들기', icon: '🏢',
+      scenario: "네이버 플레이스에 올릴 '업체 소개글'을 AI에게 부탁해보세요.\n어떤 서비스를 하는지, 강점이 뭔지, 어디에 있는지 알려주세요.",
+      hint: '업체 이름, 주요 서비스, 위치, 경력/경험, 주요 고객층을 알려주면 좋아요!',
+      evaluationCriteria: CRITERIA_M1,
+    },
+    {
+      id: 2, title: '서비스 불만 리뷰에 대표 답글', icon: '💬',
+      scenario: '고객이 이런 리뷰를 남겼습니다:\n"예약 시간에 갔는데 30분이나 기다렸어요. 서비스 자체는 괜찮았는데 시간 관리가 아쉽네요."\n\nAI에게 이 리뷰에 대한 대표님 답글을 부탁해보세요.',
+      hint: "리뷰 내용을 AI에게 보여주고, 좋았던 점에 감사하고 아쉬운 점에는 사과+개선 방안을 담아달라고 해보세요.",
+      evaluationCriteria: CRITERIA_M2,
+    },
+  ],
+};
+
+// 업종 카테고리로 미션 세트 가져오기
+function getMissions(category) {
+  const m12 = MISSIONS_BY_CATEGORY[category] || MISSIONS_BY_CATEGORY['etc'];
+  return [...m12, MISSION3_COMMON];
+}
+
 
 const LEVEL_DEFAULTS = [
   { min: 0, max: 3, level: '씨앗 단계 🌱', color: '#e67e22' },
@@ -153,6 +249,7 @@ export default function AICheckup() {
   const [gender, setGender] = useState('');
   const [phoneLast4, setPhoneLast4] = useState('');
 
+  const MISSIONS = getMissions(shopCategory);
   const mission = MISSIONS[currentMission];
   const totalScore = Object.values(scores).reduce(
     (sum, ms) => sum + Object.values(ms).reduce((s, v) => s + v, 0), 0
