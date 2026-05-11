@@ -148,6 +148,10 @@ export default function AICheckup() {
   const [practiceText, setPracticeText] = useState('');
   const [practiceSubmitted, setPracticeSubmitted] = useState(false);
   const [showPractice, setShowPractice] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [birthYear, setBirthYear] = useState('');
+  const [gender, setGender] = useState('');
+  const [phoneLast4, setPhoneLast4] = useState('');
 
   const mission = MISSIONS[currentMission];
   const totalScore = Object.values(scores).reduce(
@@ -224,7 +228,7 @@ export default function AICheckup() {
           </p>
 
           {/* 업종 분류 선택 */}
-          <div style={{ margin: '0 0 12px' }}>
+          <div style={{ margin: '0 0 16px' }}>
             <label style={{ fontSize: 13, fontWeight: 700, color: '#1a5c3a', display: 'block', marginBottom: 8 }}>🏪 어떤 업종이세요?</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
               {SHOP_CATEGORIES.map((cat) => (
@@ -241,13 +245,44 @@ export default function AICheckup() {
             </div>
             {shopCategory && (
               <input type="text"
-                placeholder={shopCategory === 'etc' ? '업종을 입력해주세요 (예: 숙박업, 운송업...)' : SHOP_CATEGORIES.find(c => c.id === shopCategory)?.examples}
+                placeholder={shopCategory === 'etc' ? '업종을 입력해주세요' : SHOP_CATEGORIES.find(c => c.id === shopCategory)?.examples}
                 value={shopType === SHOP_CATEGORIES.find(c => c.id === shopCategory)?.label ? '' : shopType}
                 onChange={(e) => setShopType(e.target.value || SHOP_CATEGORIES.find(c => c.id === shopCategory)?.label || '')}
                 style={{ width: '100%', padding: '12px 16px', border: '2px solid #e8e4dc', borderRadius: 12, fontSize: 14, outline: 'none', boxSizing: 'border-box', marginTop: 4 }}
               />
             )}
-            <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>업종에 맞는 맞춤 피드백을 받을 수 있어요!</div>
+          </div>
+
+          {/* 간단 정보 입력 (성장 추적용) */}
+          <div style={{ background: '#faf8f4', borderRadius: 14, padding: '18px 16px', margin: '0 0 16px' }}>
+            <label style={{ fontSize: 13, fontWeight: 700, color: '#1a5c3a', display: 'block', marginBottom: 10 }}>👤 간단한 정보를 입력해주세요</label>
+            <div style={{ fontSize: 12, color: '#999', marginBottom: 12 }}>재진단 시 성장 추적을 위해 필요해요. 최소한의 정보만 수집합니다.</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <input type="text" placeholder="이름 (또는 닉네임)" value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                style={{ width: '100%', padding: '12px 16px', border: '2px solid #e8e4dc', borderRadius: 12, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input type="text" placeholder="출생연도 (예: 1975)" value={birthYear}
+                  onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); setBirthYear(v); }}
+                  style={{ flex: 1, padding: '12px 16px', border: '2px solid #e8e4dc', borderRadius: 12, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[{ key: 'M', label: '남' }, { key: 'F', label: '여' }].map((g) => (
+                    <button key={g.key}
+                      onClick={() => setGender(g.key)}
+                      style={{
+                        padding: '12px 20px', border: gender === g.key ? '2px solid #1a5c3a' : '2px solid #e8e4dc',
+                        borderRadius: 12, background: gender === g.key ? '#eaf5ee' : '#fff',
+                        cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#333',
+                      }}>
+                      {g.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <input type="text" placeholder="전화번호 뒷 4자리" value={phoneLast4}
+                onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); setPhoneLast4(v); }}
+                style={{ width: '100%', padding: '12px 16px', border: '2px solid #e8e4dc', borderRadius: 12, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
           </div>
 
           <div style={{ background: '#faf8f4', borderRadius: 12, padding: '16px 18px', margin: '0 0 16px', borderLeft: '4px solid #1a5c3a' }}>
@@ -258,11 +293,16 @@ export default function AICheckup() {
             </div>
           </div>
           <p style={{ margin: '0 0 24px', fontSize: 13, color: '#999' }}>⏱ 약 5~10분 소요 · 정답이 없으니 편하게 해보세요!</p>
-          <button style={{ ...btnPrimary, opacity: !shopCategory ? 0.5 : 1 }}
-            disabled={!shopCategory}
-            onClick={() => { setPhase('mission'); setCurrentMission(0); }}>
-            진단 시작하기
-          </button>
+          {(() => {
+            const ready = shopCategory && userName.trim() && birthYear.length === 4 && gender && phoneLast4.length === 4;
+            return (
+              <button style={{ ...btnPrimary, opacity: ready ? 1 : 0.5 }}
+                disabled={!ready}
+                onClick={() => { setPhase('mission'); setCurrentMission(0); }}>
+                진단 시작하기
+              </button>
+            );
+          })()}
         </div>
         <p style={{ textAlign: 'center', fontSize: 11, color: '#bbb', margin: '24px 0' }}>AI융합연구소 · 소상공인 AI활용 체크업 v3.0</p>
       </div>
@@ -523,7 +563,8 @@ export default function AICheckup() {
           <button style={btnSecondary} onClick={() => {
             setPhase('intro'); setCurrentMission(0); setUserInputs({}); setScores({});
             setAiFeedbacks({}); setShowExample(false); setCustomDiagnosis(null);
-            setPracticeText(''); setPracticeSubmitted(false); setShowPractice(false); setShopCategory(''); setShopType('');
+            setPracticeText(''); setPracticeSubmitted(false); setShowPractice(false);
+            setShopCategory(''); setShopType(''); setUserName(''); setBirthYear(''); setGender(''); setPhoneLast4('');
           }}>처음부터 새로 시작하기</button>
           <p style={{ textAlign: 'center', fontSize: 11, color: '#bbb', margin: '20px 0 0' }}>
             사단법인 AI융합연구소 · 소상공인 AI활용 체크업 v3.0<br />jejuailab.com
