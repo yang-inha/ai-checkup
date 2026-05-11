@@ -194,10 +194,43 @@ export default function AICheckup() {
     setPhase('review');
   }
 
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd7P2v3LGp9VdBvhwDX0PloGJUf6sDee7eydIfeAhYYjcEkQtI2OQBJchJZjefd1Sk/exec';
+
+  async function saveToSheet(diagData) {
+    try {
+      const m1 = Object.values(scores[1] || {}).reduce((s, v) => s + v, 0);
+      const m2 = Object.values(scores[2] || {}).reduce((s, v) => s + v, 0);
+      const m3 = Object.values(scores[3] || {}).reduce((s, v) => s + v, 0);
+      const total = m1 + m2 + m3;
+      const lvl = LEVEL_DEFAULTS.find(l => total >= l.min && total <= l.max);
+
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: userName,
+          birthYear: birthYear,
+          gender: gender,
+          phone4: phoneLast4,
+          shopType: shopType,
+          m1, m2, m3, total,
+          level: lvl?.level || '',
+          diagnosis: diagData?.diagnosis || '',
+          recommendation: diagData?.recommendation || '',
+        }),
+      });
+    } catch (e) {
+      console.error('Sheet save error:', e);
+    }
+  }
+
   async function goToResult() {
     setPhase('loading_result');
     const diagnosis = await diagnoseWithAPI(scores, MISSIONS, shopType, totalScore);
     if (diagnosis && !diagnosis.error) setCustomDiagnosis(diagnosis);
+    // Google Sheets에 저장
+    await saveToSheet(diagnosis);
     setPhase('result');
   }
 
