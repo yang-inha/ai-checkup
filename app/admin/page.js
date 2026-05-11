@@ -1,32 +1,49 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-// ─── 목업 데이터 (나중에 Google Sheets 연동으로 교체) ───
-const MOCK_DATA = [
-  { id: 1, name: '김사장', birthYear: '1972', gender: 'M', phone4: '3842', shopType: '외식업', category: 'food',
-    sessions: [
-      { date: '2026-04-19', m1: 1, m2: 0, m3: 1, total: 2, level: '씨앗 🌱' },
-      { date: '2026-05-03', m1: 2, m2: 1, m3: 2, total: 5, level: '새싹 🌿' },
-    ]},
-  { id: 2, name: '이대표', birthYear: '1985', gender: 'F', phone4: '7291', shopType: '카페/디저트', category: 'cafe',
-    sessions: [
-      { date: '2026-04-20', m1: 2, m2: 2, m3: 1, total: 5, level: '새싹 🌿' },
-    ]},
-  { id: 3, name: '박사장', birthYear: '1968', gender: 'M', phone4: '1155', shopType: '뷰티/미용', category: 'beauty',
-    sessions: [
-      { date: '2026-04-21', m1: 0, m2: 0, m3: 0, total: 0, level: '씨앗 🌱' },
-      { date: '2026-05-05', m1: 1, m2: 1, m3: 1, total: 3, level: '씨앗 🌱' },
-      { date: '2026-05-10', m1: 2, m2: 2, m3: 2, total: 6, level: '새싹 🌿' },
-    ]},
-  { id: 4, name: '최원장', birthYear: '1990', gender: 'F', phone4: '4488', shopType: '교육/상담', category: 'education',
-    sessions: [
-      { date: '2026-04-22', m1: 3, m2: 2, m3: 3, total: 8, level: '열매 🍎' },
-    ]},
-  { id: 5, name: '정사장', birthYear: '1978', gender: 'M', phone4: '6633', shopType: '소매/판매', category: 'retail',
-    sessions: [
-      { date: '2026-04-23', m1: 1, m2: 1, m3: 0, total: 2, level: '씨앗 🌱' },
-    ]},
-];
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd7P2v3LGp9VdBvhwDX0PloGJUf6sDee7eydIfeAhYYjcEkQtI2OQBJchJZjefd1Sk/exec';
+
+const CATEGORY_MAP = {
+  '외식업': 'food', '카페/디저트': 'cafe', '뷰티/미용': 'beauty',
+  '숙박/관광': 'tourism', '소매/판매': 'retail', '교육/상담': 'education', '기타 서비스': 'etc',
+};
+
+function getLevel(total) {
+  const t = Number(total) || 0;
+  if (t >= 7) return '열매 🍎';
+  if (t >= 4) return '새싹 🌿';
+  return '씨앗 🌱';
+}
+
+// 시트 데이터를 참여자별로 그룹핑 (이름+출생연도+성별+전화번호뒷4로 식별)
+function groupByUser(rows) {
+  const map = {};
+  rows.forEach((row, idx) => {
+    const key = `${row['이름']}_${row['출생연도']}_${row['성별']}_${row['전화번호뒷4']}`;
+    if (!map[key]) {
+      map[key] = {
+        id: idx + 1,
+        name: row['이름'] || '미입력',
+        birthYear: String(row['출생연도'] || ''),
+        gender: row['성별'] || '',
+        phone4: String(row['전화번호뒷4'] || ''),
+        shopType: row['업종'] || '',
+        category: CATEGORY_MAP[row['업종']] || 'etc',
+        sessions: [],
+      };
+    }
+    const dateStr = row['날짜'] ? new Date(row['날짜']).toISOString().slice(0, 10) : '';
+    map[key].sessions.push({
+      date: dateStr,
+      m1: Number(row['미션1']) || 0,
+      m2: Number(row['미션2']) || 0,
+      m3: Number(row['미션3']) || 0,
+      total: Number(row['총점']) || 0,
+      level: row['단계'] || getLevel(row['총점']),
+    });
+  });
+  return Object.values(map);
+}
 
 const LEVEL_COLORS = {
   '씨앗 🌱': '#e67e22',
@@ -38,10 +55,28 @@ export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [filterLevel, setFilterLevel] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(null);
 
-  const data = MOCK_DATA;
+  // Google Sheets에서 데이터 불러오기
+  async function fetchData() {
+    setLoading(true);
+    try {
+      const res = await fetch(GOOGLE_SCRIPT_URL);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setData(groupByUser(json.data));
+      }
+    } catch (e) {
+      console.error('Data fetch error:', e);
+    }
+    setLoading(false);
+    setLastRefresh(new Date().toLocaleTimeString('ko-KR'));
+  }
 
-  // ─── 통계 계산 ───
+  useEffect(() => { fetchData(); }, []);
+
   const totalParticipants = data.length;
   const allLatestSessions = data.map(d => d.sessions[d.sessions.length - 1]);
   const avgScore = allLatestSessions.length > 0
@@ -92,9 +127,31 @@ export default function AdminDashboard() {
             <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, color: '#1a5c3a' }}>AI활용 체크업 관리자</h1>
             <p style={{ fontSize: 13, color: '#888', margin: '4px 0 0' }}>소상공인 파일럿 사업 대시보드</p>
           </div>
-          <div style={{ fontSize: 12, color: '#aaa' }}>사단법인 AI융합연구소</div>
+          <div style={{ textAlign: 'right' }}>
+            <button onClick={fetchData}
+              style={{ padding: '8px 16px', background: '#1a5c3a', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 4 }}>
+              🔄 새로고침
+            </button>
+            {lastRefresh && <div style={{ fontSize: 11, color: '#aaa' }}>마지막 갱신: {lastRefresh}</div>}
+            <div style={{ fontSize: 12, color: '#aaa' }}>사단법인 AI융합연구소</div>
         </div>
 
+        {/* 로딩 */}
+        {loading && (
+          <div style={{ ...card, textAlign: 'center', padding: '40px' }}>
+            <div style={{ fontSize: 16, color: '#888' }}>데이터를 불러오는 중...</div>
+          </div>
+        )}
+
+        {!loading && data.length === 0 && (
+          <div style={{ ...card, textAlign: 'center', padding: '40px' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
+            <div style={{ fontSize: 16, color: '#888' }}>아직 진단 데이터가 없습니다.</div>
+            <div style={{ fontSize: 13, color: '#aaa', marginTop: 4 }}>체크업 완료 후 여기에 데이터가 쌓여요!</div>
+          </div>
+        )}
+
+        {!loading && data.length > 0 && <>
         {/* 전체 현황 카드 */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
           <div style={statCard}>
@@ -286,6 +343,7 @@ export default function AdminDashboard() {
           사단법인 AI융합연구소 · 소상공인 AI활용 체크업 v3.0 · jejuailab.com
           <br />이 페이지는 관리자 전용입니다.
         </div>
+        </>}
       </div>
     </div>
   );
